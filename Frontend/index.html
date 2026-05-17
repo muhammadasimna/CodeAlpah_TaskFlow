@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="TaskFlow - Collaborative project management tool. Create boards, assign tasks, and communicate with your team in real-time.">
+    <title>TaskFlow — Project Management Made Beautiful</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/landing.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <script>
+        (function() {
+            const token = localStorage.getItem('pm_token');
+            let authenticated = false;
+            if (token) {
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    authenticated = payload.exp * 1000 > Date.now();
+                } catch (e) { authenticated = false; }
+            }
+            if (authenticated) window.location.href = 'dashboard.html';
+        })();
+    </script>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="landing-nav" id="landingNav">
+        <a href="index.html" class="nav-logo">
+            <div class="nav-logo-icon"><i class="fa-solid fa-list-check"></i></div>
+            <span>TaskFlow</span>
+        </a>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="#features">Features</a></li>
+            <li><a href="#how-it-works">How It Works</a></li>
+            <li><a href="#cta">Get Started</a></li>
+        </ul>
+        <div class="nav-actions">
+            <div class="theme-toggle" id="themeToggle" title="Toggle Theme">
+                <i class="fa-solid fa-sun"></i>
+            </div>
+            <a href="auth.html" class="btn btn-ghost btn-sm">Log In</a>
+            <a href="auth.html#signup" class="btn btn-primary btn-sm">Sign Up Free</a>
+        </div>
+        <div class="nav-hamburger" id="navHamburger">
+            <span></span><span></span><span></span>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-bg">
+            <div class="hero-orb hero-orb-1"></div>
+            <div class="hero-orb hero-orb-2"></div>
+            <div class="hero-orb hero-orb-3"></div>
+        </div>
+        <div class="hero-content">
+            <div class="hero-badge"><i class="fa-solid fa-rocket"></i> The future of project management</div>
+            <h1 class="hero-title">
+                Manage Projects<br>
+                <span class="gradient-text">Like Never Before</span>
+            </h1>
+            <p class="hero-description">
+                TaskFlow brings your team together with beautiful Kanban boards, real-time collaboration, and smart task
+                management. Ship faster, stress less.
+            </p>
+            <div class="hero-buttons">
+                <a href="auth.html#signup" class="btn btn-primary btn-lg">Get Started — It's Free</a>
+                <a href="#features" class="btn btn-ghost btn-lg">See Features <i class="fa-solid fa-arrow-down"></i></a>
+            </div>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <h4 data-count="1200" data-suffix="+">0</h4>
+                    <p>Active Projects</p>
+                </div>
+                <div class="hero-stat">
+                    <h4 data-count="5000" data-suffix="+">0</h4>
+                    <p>Tasks Completed</p>
+                </div>
+                <div class="hero-stat">
+                    <h4 data-count="99" data-suffix="%">0</h4>
+                    <p>Uptime</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features" id="features">
+        <div class="section-header reveal">
+            <span class="section-label">Features</span>
+            <h2 class="section-title">Everything you need to ship</h2>
+            <p class="section-description">Powerful tools designed for modern teams who want to move fast and stay
+                organized.</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card reveal">
+                <div class="feature-icon">
+                    <i class="fa-solid fa-chart-simple"></i>
+                </div>
+                <h3>Kanban Boards</h3>
+                <p>Visualize your workflow with drag-and-drop boards. Move tasks between columns effortlessly.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon feature-icon-alt">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <h3>Team Collaboration</h3>
+                <p>Invite members, assign tasks, and keep everyone aligned with shared project boards.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon">
+                    <i class="fa-solid fa-bolt"></i>
+                </div>
+                <h3>Real-time Updates</h3>
+                <p>See changes instantly with WebSocket-powered live updates. No refresh needed.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon feature-icon-alt">
+                    <i class="fa-solid fa-comments"></i>
+                </div>
+                <h3>Task Comments</h3>
+                <p>Discuss tasks directly where the work happens. Keep all context in one place.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon">
+                    <i class="fa-solid fa-bell"></i>
+                </div>
+                <h3>Smart Notifications</h3>
+                <p>Stay informed with real-time notifications for assignments, comments, and updates.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon feature-icon-alt">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h3>Secure & Private</h3>
+                <p>JWT authentication, role-based access control, and encrypted data. Your work stays safe.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="features" id="how-it-works" style="background: var(--bg-secondary);">
+        <div class="section-header reveal">
+            <span class="section-label">How It Works</span>
+            <h2 class="section-title">Get started in 3 steps</h2>
+        </div>
+        <div class="features-grid" style="max-width:900px;">
+            <div class="feature-card reveal">
+                <div class="feature-icon" style="font-size:1.8rem;font-weight:800">1</div>
+                <h3>Create a Project</h3>
+                <p>Set up your project with a name and description. Default Kanban columns are created for you
+                    automatically.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon feature-icon-alt" style="font-size:1.8rem;font-weight:800">2</div>
+                <h3>Add Tasks & Members</h3>
+                <p>Create task cards, set priorities, due dates, and invite your team to collaborate.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon" style="font-size:1.8rem;font-weight:800">3</div>
+                <h3>Track & Ship</h3>
+                <p>Drag tasks across columns, comment on progress, and watch your project come to life.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section" id="cta">
+        <div class="cta-card reveal">
+            <h2>Ready to <span class="gradient-text">supercharge</span> your workflow?</h2>
+            <p>Join thousands of teams already using TaskFlow to manage their projects efficiently.</p>
+            <a href="auth.html#signup" class="btn btn-primary btn-lg">Start Free Today <i class="fa-solid fa-rocket"></i></a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="landing-footer">
+        <p>© 2026 <a href="#">TaskFlow</a>. Built with <i class="fa-solid fa-heart" style="color:#ef4444"></i> for productive teams.</p>
+    </footer>
+
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/landing.js"></script>
+</body>
+
+</html>

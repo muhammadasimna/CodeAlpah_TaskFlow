@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow — Board</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/board.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <script>
+        (function() {
+            const token = localStorage.getItem('pm_token');
+            let authenticated = false;
+            if (token) {
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    authenticated = payload.exp * 1000 > Date.now();
+                } catch (e) { authenticated = false; }
+            }
+            if (!authenticated) window.location.href = 'index.html';
+        })();
+    </script>
+</head>
+
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo-icon"><i class="fa-solid fa-list-check"></i></div>
+                <span class="sidebar-logo-text">TaskFlow</span>
+            </div>
+            <nav class="sidebar-nav">
+                <span class="sidebar-section-title">Menu</span>
+                <a href="dashboard.html" class="sidebar-link">
+                    <span class="sidebar-link-icon"><i class="fa-solid fa-house"></i></span> Dashboard
+                </a>
+                <span class="sidebar-section-title">Account</span>
+                <button class="sidebar-link" id="colorPaletteBtn">
+                    <span class="sidebar-link-icon"><i class="fa-solid fa-palette"></i></span> App Colors
+                </button>
+                <button class="sidebar-link" id="logoutBtn">
+                    <span class="sidebar-link-icon"><i class="fa-solid fa-right-from-bracket"></i></span> Logout
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="avatar">?</div>
+                    <div class="sidebar-user-info">
+                        <div class="sidebar-user-name">User</div>
+                        <div class="sidebar-user-email">user@email.com</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Board Header -->
+            <div class="board-header">
+                <div class="board-header-left">
+                    <button class="board-back-btn" title="Back to Dashboard"><i
+                            class="fa-solid fa-arrow-left"></i></button>
+                    <h1 class="board-project-name">Loading...</h1>
+                    <div class="topbar-search board-search">
+                        <i class="fa-solid fa-magnifying-glass topbar-search-icon"></i>
+                        <input type="text" placeholder="Search tasks..." id="taskSearchInput">
+                    </div>
+                </div>
+                <div class="board-header-right">
+                    <div class="theme-toggle" id="themeToggle" title="Toggle Theme">
+                        <i class="fa-solid fa-sun"></i>
+                    </div>
+                    <div class="board-members"></div>
+                    <button class="add-member-btn" onclick="openAddMemberModal()" title="Add member"><i
+                            class="fa-solid fa-user-plus"></i></button>
+                    <div style="position:relative">
+                        <button class="notification-btn" id="notifBtn"><i class="fa-solid fa-bell"></i>
+                            <span class="notification-badge" style="display:none">0</span>
+                        </button>
+                        <div class="notification-dropdown" id="notifDropdown">
+                            <div class="notification-dropdown-header">
+                                <h4>Notifications</h4>
+                                <button class="btn btn-ghost btn-sm" id="markAllRead">Mark all read</button>
+                            </div>
+                            <div id="notificationList"></div>
+                        </div>
+                    </div>
+                    <button class="topbar-hamburger" id="topbarHamburger"><i class="fa-solid fa-bars"></i></button>
+                </div>
+            </div>
+
+            <!-- Kanban Board -->
+            <div class="kanban-container" id="kanbanContainer">
+                <!-- Rendered by JS -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Task Modal -->
+    <div class="modal-overlay" id="addTaskModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Add New Task</h3>
+                <button class="modal-close" onclick="closeAddTaskModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="addTaskForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="taskTitleInput">Task Title</label>
+                        <input type="text" id="taskTitleInput" class="form-input" placeholder="What needs to be done?"
+                            required>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskDescInput">Description</label>
+                        <textarea id="taskDescInput" class="form-input" placeholder="Add details..."
+                            rows="3"></textarea>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                        <div class="form-group">
+                            <label for="taskPriority">Priority</label>
+                            <select id="taskPriority" class="form-input">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="taskAssignee">Assign To</label>
+                            <select id="taskAssignee" class="form-input">
+                                <option value="">Unassigned</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskDueDate">Due Date</label>
+                        <input type="date" id="taskDueDate" class="form-input">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost" onclick="closeAddTaskModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Task Detail Modal -->
+    <div class="modal-overlay task-detail-modal" id="taskDetailModal">
+        <div class="modal" style="max-width:640px">
+            <div class="modal-header">
+                <h3>Task Details</h3>
+                <button class="modal-close" onclick="closeTaskDetail()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="detailTaskId">
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="detailTitle" class="form-input">
+                </div>
+                <div class="task-detail-meta">
+                    <div class="form-group">
+                        <label>Priority</label>
+                        <select id="detailPriority" class="form-input">
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Assign To</label>
+                        <select id="detailAssignee" class="form-input">
+                            <option value="">Unassigned</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Due Date</label>
+                    <input type="date" id="detailDueDate" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="detailDesc" class="form-input" rows="4" placeholder="Add a description..."></textarea>
+                </div>
+
+                <!-- Checklists -->
+                <div class="checklist-section" style="margin-bottom: 24px;">
+                    <h4 style="margin-bottom: 12px; font-size: 0.9rem; color: var(--text-color);"><i class="fa-solid fa-list-check" style="color: var(--primary); margin-right: 6px;"></i> Subtasks</h4>
+                    <div class="checklist-progress" style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                        <span id="checklistProgressText" style="font-size: 0.8rem; color: var(--text-muted); width: 35px;">0%</span>
+                        <div style="flex: 1; height: 6px; background: var(--bg-primary); border-radius: 3px; overflow: hidden;">
+                            <div id="checklistProgressBar" style="width: 0%; height: 100%; background: var(--primary); transition: width 0.3s ease;"></div>
+                        </div>
+                    </div>
+                    <div class="checklist-list" id="checklistList" style="margin-bottom: 12px;"></div>
+                    <div class="checklist-input-area" style="display: flex; gap: 8px;">
+                        <input type="text" id="checklistInput" class="form-input" placeholder="Add an item...">
+                        <button class="btn btn-ghost" onclick="addChecklistItem()"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                </div>
+
+                <!-- Comments -->
+                <div class="comments-section">
+                    <h4><i class="fa-solid fa-comments"></i> Comments</h4>
+                    <div class="comments-list" id="commentsList"></div>
+                    <div class="comment-input-area">
+                        <input type="text" id="commentInput" class="form-input"
+                            placeholder="Write a comment... (Enter to send)">
+                        <button class="btn btn-primary btn-sm" onclick="addComment()">Send</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger btn-sm" id="deleteTaskBtn"><i class="fa-solid fa-trash-can"></i>
+                    Delete</button>
+                <button class="btn btn-primary" id="saveTaskBtn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Member Modal -->
+    <div class="modal-overlay" id="addMemberModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Add Team Member</h3>
+                <button class="modal-close" onclick="closeAddMemberModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Search Users</label>
+                    <input type="text" id="memberSearchInput" class="form-input"
+                        placeholder="Search by name, email, or username...">
+                </div>
+                <div id="memberSearchResults"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Members Modal -->
+    <div class="modal-overlay" id="projectMembersModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Project Team</h3>
+                <button class="modal-close" onclick="closeProjectMembersModal()"><i
+                        class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="members-dialog-list" id="projectMembersList">
+                    <!-- Members will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Column Modal -->
+    <div class="modal-overlay" id="addColumnModal">
+        <div class="modal modal-sm">
+            <div class="modal-header">
+                <h3>Add New Column</h3>
+                <button class="modal-close" onclick="closeAddColumnModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="columnNameInput">Column Name</label>
+                    <input type="text" id="columnNameInput" class="form-input" placeholder="e.g. In Review, Done"
+                        required>
+                </div>
+                <div class="form-group">
+                    <label>Column Color</label>
+                    <div class="color-options-grid" id="columnColorOptions">
+                        <div class="column-color-option active" style="background:#6366f1" data-color="#6366f1"></div>
+                        <div class="column-color-option" style="background:#10b981" data-color="#10b981"></div>
+                        <div class="column-color-option" style="background:#f59e0b" data-color="#f59e0b"></div>
+                        <div class="column-color-option" style="background:#ef4444" data-color="#ef4444"></div>
+                        <div class="column-color-option" style="background:#3b82f6" data-color="#3b82f6"></div>
+                        <div class="column-color-option" style="background:#8b5cf6" data-color="#8b5cf6"></div>
+                        <div class="column-color-option" style="background:#ec4899" data-color="#ec4899"></div>
+                        <div class="column-color-option" style="background:#06b6d4" data-color="#06b6d4"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" onclick="closeAddColumnModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" id="addColumnBtn">Create Column</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Color Palette Modal -->
+    <div class="modal-overlay" id="colorPaletteModal">
+        <div class="modal modal-sm">
+            <div class="modal-header">
+                <h3>App Accent Color</h3>
+                <button class="modal-close" onclick="closeColorPaletteModal()"><i
+                        class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-2">Choose a primary color for your workspace.</p>
+                <div class="color-options-grid">
+                    <div class="color-option active" style="background:#7c3aed" data-primary="#7c3aed"
+                        data-secondary="#a855f7" title="Purple"></div>
+                    <div class="color-option" style="background:#2563eb" data-primary="#2563eb" data-secondary="#3b82f6"
+                        title="Blue"></div>
+                    <div class="color-option" style="background:#059669" data-primary="#059669" data-secondary="#10b981"
+                        title="Emerald"></div>
+                    <div class="color-option" style="background:#d97706" data-primary="#d97706" data-secondary="#f59e0b"
+                        title="Amber"></div>
+                    <div class="color-option" style="background:#dc2626" data-primary="#dc2626" data-secondary="#ef4444"
+                        title="Red"></div>
+                    <div class="color-option" style="background:#0891b2" data-primary="#0891b2" data-secondary="#06b6d4"
+                        title="Cyan"></div>
+                    <div class="color-option" style="background:#db2777" data-primary="#db2777" data-secondary="#ec4899"
+                        title="Pink"></div>
+                    <div class="color-option" style="background:#4f46e5" data-primary="#4f46e5" data-secondary="#6366f1"
+                        title="Indigo"></div>
+                </div>
+                <div class="custom-color-picker mt-3">
+                    <p class="text-muted mb-1">Or choose a custom color:</p>
+                    <div class="flex-center gap-2">
+                        <input type="color" id="customColorInput" class="color-input-field">
+                        <span id="customColorValue" class="text-xs">#7c3aed</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeColorPaletteModal()">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div class="modal-overlay" id="profileModal">
+        <div class="modal modal-sm">
+            <div class="modal-header">
+                <h3>Your Profile</h3>
+                <button class="modal-close" onclick="closeProfileModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body profile-modal-body">
+                <div class="profile-avatar-section">
+                    <div id="profileAvatarPreview" class="profile-avatar-preview"></div>
+                    <label for="avatarInput" class="avatar-edit-overlay">
+                        <i class="fa-solid fa-camera"></i>
+                    </label>
+                    <input type="file" id="avatarInput" class="hidden" accept="image/*">
+                </div>
+                <button class="avatar-remove-btn" id="removeAvatarBtn">Remove profile picture</button>
+                
+                <form id="profileForm" style="width: 100%;">
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="text" id="profileEmailDisplay" class="form-input" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label for="profileNameInput">Full Name</label>
+                        <input type="text" id="profileNameInput" class="form-input" required>
+                    </div>
+                    <div class="modal-footer" style="padding: 0; border: none; margin-top: 24px;">
+                        <button type="button" class="btn btn-ghost" onclick="closeProfileModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Profile</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/websocket.js"></script>
+    <script src="js/board.js"></script>
+</body>
+
+</html>

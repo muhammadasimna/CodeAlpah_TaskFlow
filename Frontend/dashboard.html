@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow — Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <script>
+        (function() {
+            const token = localStorage.getItem('pm_token');
+            let authenticated = false;
+            if (token) {
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    authenticated = payload.exp * 1000 > Date.now();
+                } catch (e) { authenticated = false; }
+            }
+            if (!authenticated) window.location.href = 'index.html';
+        })();
+    </script>
+</head>
+
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo-icon"><i class="fa-solid fa-list-check"></i></div>
+                <span class="sidebar-logo-text">TaskFlow</span>
+            </div>
+            <nav class="sidebar-nav">
+                <span class="sidebar-section-title">Menu</span>
+                <a href="dashboard.html" class="sidebar-link active">
+                    <span class="sidebar-link-icon"><i class="fa-solid fa-house"></i></span> Dashboard
+                </a>
+                <span class="sidebar-section-title">Account</span>
+                <button class="sidebar-link" id="colorPaletteBtn">
+                    <span class="sidebar-link-icon"><i class="fa-solid fa-palette"></i></span> App Colors
+                </button>
+                <button class="sidebar-link" id="logoutBtn">
+                    <span class="sidebar-link-icon"><i class="fa-solid fa-right-from-bracket"></i></span> Logout
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="avatar">?</div>
+                    <div class="sidebar-user-info">
+                        <div class="sidebar-user-name">User</div>
+                        <div class="sidebar-user-email">user@email.com</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Sidebar overlay (mobile) -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="topbar-hamburger" id="topbarHamburger"><i class="fa-solid fa-bars"></i></button>
+                    <h1 class="topbar-title">Dashboard</h1>
+                </div>
+                <div class="topbar-right">
+                    <div class="theme-toggle" id="themeToggle" title="Toggle Theme">
+                        <i class="fa-solid fa-sun"></i>
+                    </div>
+                    <div class="topbar-search">
+                        <span class="topbar-search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+                        <input type="text" placeholder="Search projects..." id="searchInput">
+                    </div>
+                    <div style="position:relative">
+                        <button class="notification-btn" id="notifBtn">
+                            <i class="fa-solid fa-bell"></i>
+                            <span class="notification-badge" style="display:none">0</span>
+                        </button>
+                        <div class="notification-dropdown" id="notifDropdown">
+                            <div class="notification-dropdown-header">
+                                <h4>Notifications</h4>
+                                <button class="btn btn-ghost btn-sm" id="markAllRead">Mark all read</button>
+                            </div>
+                            <div id="notificationList">
+                                <div class="notification-empty">No notifications yet <i class="fa-solid fa-bell"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Content -->
+            <div class="dashboard-content">
+                <div class="dashboard-welcome">
+                    <h1>Welcome! 👋</h1>
+                    <p>Here's an overview of your projects and tasks.</p>
+                </div>
+
+                <!-- Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background:rgba(124,58,237,0.15);color:#a855f7">
+                            <i class="fa-solid fa-folder"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value" id="statProjects">0</div>
+                            <div class="stat-label">Projects</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background:rgba(59,130,246,0.15);color:#60a5fa">
+                            <i class="fa-solid fa-list-check"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value" id="statTasks">0</div>
+                            <div class="stat-label">Total Tasks</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background:rgba(16,185,129,0.15);color:#34d399">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value" id="statMembers">0</div>
+                            <div class="stat-label">Team Members</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Projects -->
+                <div class="projects-header">
+                    <h2>Your Projects</h2>
+                    <button class="btn btn-primary btn-sm" onclick="openCreateModal()"><i class="fa-solid fa-plus"></i>
+                        New Project</button>
+                </div>
+                <div class="projects-grid" id="projectsGrid">
+                    <!-- Rendered by JS -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Create Project Modal -->
+    <div class="modal-overlay" id="createProjectModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Create New Project</h3>
+                <button class="modal-close" onclick="closeCreateModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="createProjectForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="projectNameInput">Project Name</label>
+                        <input type="text" id="projectNameInput" class="form-input" placeholder="e.g. Website Redesign"
+                            required maxlength="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="projectDescInput">Description (optional)</label>
+                        <textarea id="projectDescInput" class="form-input" placeholder="What is this project about?"
+                            rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost" onclick="closeCreateModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Project Modal -->
+    <div class="modal-overlay" id="editProjectModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Edit Project</h3>
+                <button class="modal-close" onclick="closeEditProjectModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="editProjectForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="editProjectNameInput">Project Name</label>
+                        <input type="text" id="editProjectNameInput" class="form-input" required maxlength="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="editProjectDescInput">Description</label>
+                        <textarea id="editProjectDescInput" class="form-input" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost" onclick="closeEditProjectModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Color Palette Modal -->
+    <div class="modal-overlay" id="colorPaletteModal">
+        <div class="modal modal-sm">
+            <div class="modal-header">
+                <h3>App Accent Color</h3>
+                <button class="modal-close" onclick="closeColorPaletteModal()"><i
+                        class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-2">Choose a primary color for your workspace.</p>
+                <div class="color-options-grid">
+                    <div class="color-option active" style="background:#7c3aed" data-primary="#7c3aed"
+                        data-secondary="#a855f7" title="Purple"></div>
+                    <div class="color-option" style="background:#2563eb" data-primary="#2563eb" data-secondary="#3b82f6"
+                        title="Blue"></div>
+                    <div class="color-option" style="background:#059669" data-primary="#059669" data-secondary="#10b981"
+                        title="Emerald"></div>
+                    <div class="color-option" style="background:#d97706" data-primary="#d97706" data-secondary="#f59e0b"
+                        title="Amber"></div>
+                    <div class="color-option" style="background:#dc2626" data-primary="#dc2626" data-secondary="#ef4444"
+                        title="Red"></div>
+                    <div class="color-option" style="background:#0891b2" data-primary="#0891b2" data-secondary="#06b6d4"
+                        title="Cyan"></div>
+                    <div class="color-option" style="background:#db2777" data-primary="#db2777" data-secondary="#ec4899"
+                        title="Pink"></div>
+                    <div class="color-option" style="background:#4f46e5" data-primary="#4f46e5" data-secondary="#6366f1"
+                        title="Indigo"></div>
+                </div>
+                <div class="custom-color-picker mt-3">
+                    <p class="text-muted mb-1">Or choose a custom color:</p>
+                    <div class="flex-center gap-2">
+                        <input type="color" id="customColorInput" class="color-input-field">
+                        <span id="customColorValue" class="text-xs">#7c3aed</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeColorPaletteModal()">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div class="modal-overlay" id="profileModal">
+        <div class="modal modal-sm">
+            <div class="modal-header">
+                <h3>Your Profile</h3>
+                <button class="modal-close" onclick="closeProfileModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body profile-modal-body">
+                <div class="profile-avatar-section">
+                    <div id="profileAvatarPreview" class="profile-avatar-preview"></div>
+                    <label for="avatarInput" class="avatar-edit-overlay">
+                        <i class="fa-solid fa-camera"></i>
+                    </label>
+                    <input type="file" id="avatarInput" class="hidden" accept="image/*">
+                </div>
+                <button class="avatar-remove-btn" id="removeAvatarBtn">Remove profile picture</button>
+                
+                <form id="profileForm" style="width: 100%;">
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="text" id="profileEmailDisplay" class="form-input" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label for="profileNameInput">Full Name</label>
+                        <input type="text" id="profileNameInput" class="form-input" required>
+                    </div>
+                    <div class="modal-footer" style="padding: 0; border: none; margin-top: 24px;">
+                        <button type="button" class="btn btn-ghost" onclick="closeProfileModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Profile</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/websocket.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+
+</html>

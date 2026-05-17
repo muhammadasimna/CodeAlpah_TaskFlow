@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sign in or create your TaskFlow account to start managing projects.">
+    <title>TaskFlow — Sign In</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <script>
+        (function() {
+            const token = localStorage.getItem('pm_token');
+            let authenticated = false;
+            if (token) {
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    authenticated = payload.exp * 1000 > Date.now();
+                } catch (e) { authenticated = false; }
+            }
+            if (authenticated) window.location.href = 'dashboard.html';
+        })();
+    </script>
+</head>
+
+<body>
+    <div class="auth-page">
+        <!-- Animated background -->
+        <div class="auth-bg">
+            <div class="auth-bg-orb"></div>
+            <div class="auth-bg-orb"></div>
+            <div class="auth-bg-orb"></div>
+            <div class="auth-grid-pattern"></div>
+        </div>
+
+        <div class="auth-container">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 24px;">
+                <a href="index.html" class="auth-back-link"><i class="fa-solid fa-arrow-left"></i> Back to Home</a>
+                <div class="theme-toggle" id="themeToggle" title="Toggle Theme">
+                    <i class="fa-solid fa-sun"></i>
+                </div>
+            </div>
+
+            <div class="auth-card">
+                <div class="auth-card-accent"></div>
+                <div class="auth-card-body">
+                    <!-- Logo -->
+                    <div class="auth-logo">
+                        <div class="auth-logo-icon"><i class="fa-solid fa-list-check"></i></div>
+                        <span class="auth-logo-text">TaskFlow</span>
+                    </div>
+                    <h1 class="auth-title">Welcome Back</h1>
+                    <p class="auth-subtitle">Sign in to your account or create a new one</p>
+
+                    <!-- Tab Switcher -->
+                    <div class="auth-tabs">
+                        <div class="auth-tab-indicator" id="tabIndicator"></div>
+                        <button class="auth-tab active" data-tab="login">Sign In</button>
+                        <button class="auth-tab" data-tab="signup">Sign Up</button>
+                    </div>
+
+                    <!-- Login Panel -->
+                    <div class="auth-form-panel active" id="loginPanel">
+                        <form id="loginForm">
+                            <div class="form-group">
+                                <label for="loginEmail">Email Address</label>
+                                <div class="input-with-icon">
+                                    <input type="email" id="loginEmail" class="form-input" placeholder="you@example.com"
+                                        required>
+                                    <span class="input-icon"><i class="fa-solid fa-envelope"></i></span>
+                                </div>
+                                <div class="form-error"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="loginPassword">Password</label>
+                                <div class="input-with-icon">
+                                    <input type="password" id="loginPassword" class="form-input"
+                                        placeholder="Enter your password" required>
+                                    <span class="input-icon"><i class="fa-solid fa-lock"></i></span>
+                                    <button type="button" class="password-toggle"><i class="fa-solid fa-eye"></i></button>
+                                </div>
+                                <div class="form-error"></div>
+                            </div>
+                            <button type="submit" class="btn btn-primary auth-submit">Sign In</button>
+                        </form>
+                    </div>
+
+                    <!-- Signup Panel -->
+                    <div class="auth-form-panel" id="signupPanel">
+                        <form id="signupForm">
+                            <div class="form-group">
+                                <label for="signupName">Full Name</label>
+                                <div class="input-with-icon">
+                                    <input type="text" id="signupName" class="form-input" placeholder="John Doe"
+                                        required>
+                                    <span class="input-icon"><i class="fa-solid fa-user"></i></span>
+                                </div>
+                                <div class="form-error"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="signupUsername">Username</label>
+                                <div class="input-with-icon">
+                                    <input type="text" id="signupUsername" class="form-input" placeholder="johndoe"
+                                        required>
+                                    <span class="input-icon"><i class="fa-solid fa-at"></i></span>
+                                </div>
+                                <div class="form-error"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="signupEmail">Email Address</label>
+                                <div class="input-with-icon">
+                                    <input type="email" id="signupEmail" class="form-input"
+                                        placeholder="you@example.com" required>
+                                    <span class="input-icon"><i class="fa-solid fa-envelope"></i></span>
+                                </div>
+                                <div class="form-error"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="signupPassword">Password</label>
+                                <div class="input-with-icon">
+                                    <input type="password" id="signupPassword" class="form-input"
+                                        placeholder="Min 6 characters" required>
+                                    <span class="input-icon"><i class="fa-solid fa-lock"></i></span>
+                                    <button type="button" class="password-toggle"><i class="fa-solid fa-eye"></i></button>
+                                </div>
+                                <div class="password-strength">
+                                    <div class="password-strength-bar"></div>
+                                    <div class="password-strength-bar"></div>
+                                    <div class="password-strength-bar"></div>
+                                </div>
+                                <div class="password-strength-text"></div>
+                                <div class="form-error"></div>
+                            </div>
+                            <button type="submit" class="btn btn-primary auth-submit">Create Account</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+
+</html>
